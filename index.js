@@ -251,5 +251,4 @@ app.put("/payorder/:id", async function (req, res) {
     }
 });
 
-app.listen(process.env.PORT || 3000)
-
+app.listen(3003, () => { console.log("app is running") })
