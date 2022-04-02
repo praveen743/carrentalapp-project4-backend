@@ -15,19 +15,27 @@ app.use(cors({
 }))
 
 let authenticate = function (req, res, next) {
+    try{
     if (req.headers.authorization) {
         let result = jswt.verify(req.headers.authorization, secret);
+        console
         if (result) {
             next();
         }
         else {
-            res.status(401).json({ message: "token invalid" })
+            res.json({ message: "token invalid" })
         }
     }
     else {
-        res.status(401).json({ message: "not authorized" })
+        res.json({ message: "not authorized" })
     }
+}catch{
+     console.log("token expired");
+        res.json({ message: "token expired" })
 }
+}
+
+
 
 app.post('/register', async function (req, res) {
     try {
@@ -70,19 +78,21 @@ app.post('/login', async function (req, res) {
         let connection = await mongoClient.connect(URL);
         let db = connection.db("carrental");
         let user = await db.collection("registeration").findOne({ email: req.body.email });
-        if (user) {
+        
+        if (user){
             let passwordcheck = await bcrypt.compare(req.body.password, user.password)
+           
             if (passwordcheck) {
-                let token = jswt.sign({ userid: user._id }, secret, { expiresIn: '2h' });
+                let token = jswt.sign({ userid: user._id }, secret, { expiresIn: '10h' });
                 res.json({ message: "login", user, token });
-            }
-            else {
+            } else {
                 res.json({ message: "email id or password incorrect" });
             }
+           
+        } else {
+            res.json({ message: "User not registered" });
         }
-        else {
-            res.json({ message: "email id or password incorrect" });
-        }
+       
         connection.close();
 
     } catch (error) {
@@ -102,7 +112,7 @@ app.post("/addcar", async function (req, res) {
     }
 });
 
-app.get("/view/:id",authenticate, async function (req, res) {
+app.get("/view/:id",async function (req, res) {
     try {
         let connection = await mongoClient.connect(URL);
         let db = connection.db("carrental");
