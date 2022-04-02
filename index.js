@@ -112,7 +112,7 @@ app.post("/addcar", async function (req, res) {
     }
 });
 
-app.get("/view/:id",authenticate,async function (req, res) {
+app.get("/view/:id",async function (req, res) {
     try {
         let connection = await mongoClient.connect(URL);
         let db = connection.db("carrental");
